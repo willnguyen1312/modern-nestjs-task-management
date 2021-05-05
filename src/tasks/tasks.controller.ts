@@ -4,12 +4,12 @@ import {
   Delete,
   Get,
   Inject,
+  Logger,
   Param,
   ParseIntPipe,
   Patch,
   Post,
   Query,
-  Req,
   UseGuards,
   UsePipes,
   ValidationPipe,
@@ -28,6 +28,8 @@ import { TasksService } from './tasks.service';
 @Controller('tasks')
 @UseGuards(AuthGuard())
 export class TasksController {
+  private logger = new Logger('TasksController');
+
   constructor(
     private readonly taskService: TasksService,
     @Inject(REQUEST) private readonly request: Request,
@@ -37,7 +39,13 @@ export class TasksController {
   getTasks(
     @Query(ValidationPipe) filterDto: GetTasksFilterDto,
   ): Promise<Task[]> {
-    return this.taskService.getTasks(filterDto, this.request.user as User);
+    const user = this.request.user as User;
+    this.logger.verbose(
+      `User ${user.username} retrieving all tasks. Filters: ${JSON.stringify(
+        filterDto,
+      )}`,
+    );
+    return this.taskService.getTasks(filterDto, user);
   }
 
   @Get('/:id')
